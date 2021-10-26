@@ -29,7 +29,7 @@ func main() {
 		// Перевод сообщение в нижний регистр для последующего поиска в нем
 		obj.Message.Text = strings.ToLower(obj.Message.Text)
 
-		if strings.Contains(obj.Message.Text, "расписос") {
+		if obj.Message.Text == "расписос" {
 			// Собираем сообщение-ответ
 			b := params.NewMessagesSendBuilder()
 			b.Message(getSchedule(posix))
