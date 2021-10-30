@@ -5,17 +5,46 @@ import (
 	"fmt"
 	"golang.org/x/net/publicsuffix"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"strings"
 )
 
-func getSchedule(unixtime int) string {
+func getSchedule(unixtime int, vkID int, peerID int) string {
+
+	var groupID string
+	var userID string
+	var login string
+	var password string
+	var motd string
+
+	if vkID == vk892[0] || vkID == vk892[1] {
+		userID = user892
+		groupID = class892
+		login = login892
+		password = password892
+		motd = "РАСПИСАНИЕ ГРУППЫ 892"
+	} else if vkID == vk782 || peerID == peer782 {
+		userID = user782
+		groupID = class782
+		login = login782
+		password = password782
+		motd = "РАСПИСАНИЕ ГРУППЫ 782"
+	} else if vkID == vk992 {
+		userID = user992
+		groupID = class992
+		login = login992
+		password = password992
+		motd = "РАСПИСАНИЕ ГРУППЫ 992"
+	}
 
 	// Объявлем переменную ответа, переменную с сылкой на расписос и переменную с "пустым" ответом
 	var schedule = ""
-	var scheduleUrl string = fmt.Sprintf("https://dnevnik.ru/api/userfeed/persons/1000014823656/schools/1000008291793/groups/1847068957572046690/schedule?date=%d&takeDays=1", unixtime)
-	var unwanted = "{\"days\":[],\"chatStub\":{\"jid\":\"chat_students_1561239987829826940@muclight.xmpp.dnevnik.ru\"}}" // "Пустой" JSON от Дневник.Ру
+	var scheduleUrl string = fmt.Sprint("https://dnevnik.ru/api/userfeed/persons/", userID, "/schools/", schoolID, "/groups/", groupID, "/schedule?date=", unixtime, "&takeDays=1")
+	log.Println(scheduleUrl)
+	var unwanted = "{\"days\":[],\"chatStub\":{\"jid\":\"}" // "Пустой" JSON от Дневник.Ру
 
 	// Создаем банку с cookies и http-клиента с этими кукисами.
 	options := cookiejar.Options{ // Тут открывается банка с cookies
@@ -26,8 +55,8 @@ func getSchedule(unixtime int) string {
 
 	// Создаем сессию Dnevnik.ru с помощью POST-запроса
 	resp, _ := client.PostForm(D_URL, url.Values{
-		"login":    {A_login},
-		"password": {A_password},
+		"login":    {login},
+		"password": {password},
 	})
 
 	// Оформляем GET-запрос на расписос и записываем его в переменную data
@@ -35,9 +64,10 @@ func getSchedule(unixtime int) string {
 	data, _ := ioutil.ReadAll(resp.Body)
 
 	// Проверяем, получили ли мы желаемый ответ от Дневник.ру
-	if string(data) == unwanted {
+	if strings.Contains(string(data), unwanted) {
 		schedule = "Расписание не готово, или сегодня нет пар"
 	} else {
+		schedule = fmt.Sprint(motd, "\n\n")
 		// Вбиваем JSON в структуру
 		json.Unmarshal(data, &ag)
 		i := 1

@@ -7,7 +7,9 @@ import (
 	"github.com/SevereCloud/vksdk/v2/events"
 	"github.com/SevereCloud/vksdk/v2/longpoll-bot"
 	"log"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -17,6 +19,8 @@ func main() {
 	group, _ := vk.GroupsGetByID(nil)
 	lp, _ := longpoll.NewLongPoll(vk, group[0].ID)
 
+	rand.Seed(time.Now().UnixNano())
+
 	// Событие Новое сообщение
 	lp.MessageNew(func(_ context.Context, obj events.MessageNewObject) {
 
@@ -24,7 +28,7 @@ func main() {
 		var posix = getPOSIX()
 
 		// Логируем сообщение
-		log.Printf("%d: %s", obj.Message.PeerID, obj.Message.Text)
+		log.Printf("%d %d: %s", obj.Message.PeerID, obj.Message.FromID, obj.Message.Text)
 
 		// Перевод сообщение в нижний регистр для последующего поиска в нем
 		obj.Message.Text = strings.ToLower(obj.Message.Text)
@@ -32,7 +36,7 @@ func main() {
 		if obj.Message.Text == "расписос" {
 			// Собираем сообщение-ответ
 			b := params.NewMessagesSendBuilder()
-			b.Message(getSchedule(posix))
+			b.Message(getSchedule(posix, obj.Message.FromID, obj.Message.PeerID))
 			b.RandomID(0)
 			b.PeerID(obj.Message.PeerID)
 			vk.MessagesSend(b.Params)
@@ -40,7 +44,7 @@ func main() {
 
 		if strings.Contains(obj.Message.Text, "расписос на завтра") {
 			b := params.NewMessagesSendBuilder()
-			b.Message(getSchedule(posix + 86400))
+			b.Message(getSchedule(posix+86400, obj.Message.FromID, obj.Message.PeerID))
 			b.RandomID(0)
 			b.PeerID(obj.Message.PeerID)
 			vk.MessagesSend(b.Params)
@@ -54,6 +58,15 @@ func main() {
 			vk.MessagesSend(b.Params)
 		}
 
+		if strings.Contains(obj.Message.Text, "анекдот от марченко") {
+			jokeNumber := rand.Intn(4-0) + 0
+
+			b := params.NewMessagesSendBuilder()
+			b.RandomID(0)
+			b.Message(jokes[jokeNumber])
+			b.PeerID(obj.Message.PeerID)
+			vk.MessagesSend(b.Params)
+		}
 	})
 
 	// Запуск lp-хендлера
