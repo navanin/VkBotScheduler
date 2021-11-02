@@ -44,7 +44,7 @@ func getSchedule(unixtime int, vkID int, peerID int) string {
 	var schedule = ""
 	var scheduleUrl string = fmt.Sprint("https://dnevnik.ru/api/userfeed/persons/", userID, "/schools/", schoolID, "/groups/", groupID, "/schedule?date=", unixtime, "&takeDays=1")
 	log.Println(scheduleUrl)
-	var unwanted = "{\"days\":[],\"chatStub\":{\"jid\":\"}" // "Пустой" JSON от Дневник.Ру
+	var unwanted = "\"days\":[]" // "Пустой" JSON от Дневник.Ру
 
 	// Создаем банку с cookies и http-клиента с этими кукисами.
 	options := cookiejar.Options{ // Тут открывается банка с cookies

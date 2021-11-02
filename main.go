@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/SevereCloud/vksdk/v2/api/params"
 	"github.com/SevereCloud/vksdk/v2/events"
@@ -60,10 +61,25 @@ func main() {
 
 		if strings.Contains(obj.Message.Text, "анекдот от марченко") {
 			jokeNumber := rand.Intn(4-0) + 0
-
 			b := params.NewMessagesSendBuilder()
 			b.RandomID(0)
 			b.Message(jokes[jokeNumber])
+			b.PeerID(obj.Message.PeerID)
+			vk.MessagesSend(b.Params)
+		}
+
+		if obj.Message.Text == "ты где" {
+			b := params.NewMessagesSendBuilder()
+			b.RandomID(0)
+			b.Message("братка я в доту хуярю")
+			b.PeerID(obj.Message.PeerID)
+			vk.MessagesSend(b.Params)
+		}
+
+		if obj.Message.Text == "posix" {
+			b := params.NewMessagesSendBuilder()
+			b.RandomID(0)
+			b.Message(fmt.Sprint(posix))
 			b.PeerID(obj.Message.PeerID)
 			vk.MessagesSend(b.Params)
 		}
